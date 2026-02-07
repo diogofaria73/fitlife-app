@@ -85,8 +85,6 @@ pnpm android  # ou pnpm ios
 
 ## 📚 Documentação
 
-- [Docker Setup](./DOCKER.md) - Guia completo Docker
-- [GitHub Setup](./GITHUB_SETUP.md) - Informações do repositório
 - [Cursor Rules](./.cursor/rules/README.md) - Regras e convenções do projeto
 - [Backend Architecture](./.cursor/rules/backend/architecture.md) - Arquitetura DDD
 - [API Standards](./.cursor/rules/backend/api-standards.md) - Padrões de API
