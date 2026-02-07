@@ -1,0 +1,101 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: fitlife-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: fitlife
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - fitlife-network
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: fitlife-redis
+    restart: unless-stopped
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - fitlife-network
+
+  # Backend API (Development)
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    container_name: fitlife-api
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/fitlife
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: ${JWT_SECRET:-dev-secret-change-in-production}
+      JWT_EXPIRES_IN: 15m
+      REFRESH_TOKEN_EXPIRES_IN: 7d
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      WEB_URL: http://localhost:5173
+      MOBILE_APP_SCHEME: fitlife://
+    ports:
+      - '3000:3000'
+    volumes:
+      - ./apps/api/src:/app/src
+      - ./apps/api/prisma:/app/prisma
+      - /app/node_modules
+    networks:
+      - fitlife-network
+    command: pnpm dev
+
+  # Prisma Studio (Database GUI)
+  prisma-studio:
+    image: node:20-alpine
+    container_name: fitlife-prisma-studio
+    working_dir: /app
+    depends_on:
+      - postgres
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/fitlife
+    ports:
+      - '5555:5555'
+    volumes:
+      - ./apps/api:/app
+    networks:
+      - fitlife-network
+    command: sh -c "npm install -g prisma && npx prisma studio --port 5555 --hostname 0.0.0.0"
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  fitlife-network:
+    driver: bridge

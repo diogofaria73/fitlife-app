@@ -16,14 +16,35 @@ fitlife-app/
 
 ## 🚀 Quick Start
 
-### Pré-requisitos
+### Opção A: Docker (Recomendado) 🐳
+
+```bash
+# Iniciar todos os serviços (PostgreSQL, Redis, API)
+docker-compose up -d
+
+# Aplicar migrations
+docker-compose exec api pnpm db:migrate
+
+# (Opcional) Seed database
+docker-compose exec api pnpm db:seed
+
+# Acessar:
+# - API: http://localhost:3000
+# - Prisma Studio: http://localhost:5555
+```
+
+Ver documentação completa em [DOCKER.md](./DOCKER.md)
+
+### Opção B: Instalação Local
+
+#### Pré-requisitos
 
 - Node.js 20+
 - pnpm 8+
 - PostgreSQL 16
 - Redis (opcional para caching)
 
-### Instalação
+#### Instalação
 
 ```bash
 # Instalar dependências
@@ -64,6 +85,8 @@ pnpm android  # ou pnpm ios
 
 ## 📚 Documentação
 
+- [Docker Setup](./DOCKER.md) - Guia completo Docker
+- [GitHub Setup](./GITHUB_SETUP.md) - Informações do repositório
 - [Cursor Rules](./.cursor/rules/README.md) - Regras e convenções do projeto
 - [Backend Architecture](./.cursor/rules/backend/architecture.md) - Arquitetura DDD
 - [API Standards](./.cursor/rules/backend/api-standards.md) - Padrões de API

@@ -1,0 +1,59 @@
+# Docker ignore patterns
+
+node_modules/
+npm-debug.log
+pnpm-debug.log
+yarn-error.log
+
+# Environment files
+.env
+.env.*
+!.env.example
+!.env.docker.example
+
+# Build outputs
+dist/
+build/
+.next/
+out/
+
+# Logs
+logs/
+*.log
+
+# Testing
+coverage/
+.nyc_output/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Git
+.git/
+.gitignore
+
+# Documentation
+*.md
+!README.md
+
+# Development files
+.eslintrc.json
+.prettierrc.json
+tsconfig.json
+vitest.config.ts
+
+# Tests
+tests/
+**/*.spec.ts
+**/*.test.ts
+
+# Cursor
+.cursor/
+.cursorrules
