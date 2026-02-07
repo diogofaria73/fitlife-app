@@ -68,6 +68,7 @@ Ao desenvolver código para este projeto:
 5. **Use o Prisma schema** como referência para modelagem de dados
 6. **Otimize queries e indexes** ao trabalhar com banco de dados
 7. **Siga os templates de prompts** em `.cursor/rules/ai-pipeline/prompts.md`
+8. **NUNCA crie arquivos `.md` automaticamente** para documentar alterações (ex: `CHANGES.md`, `UPDATES.md`, `IMPLEMENTATION.md`). Arquivos de documentação em Markdown devem ser criados **SOMENTE quando explicitamente solicitados pelo usuário**
 
 ## Referências Rápidas
 
