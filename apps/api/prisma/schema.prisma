@@ -1,0 +1,344 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ==================== USER & AUTH ====================
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  name      String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  profile       UserProfile?
+  workoutPlans  WorkoutPlan[]
+  mealPlans     MealPlan[]
+  workoutLogs   WorkoutLog[]
+  mealLogs      MealLog[]
+  progressLogs  ProgressLog[]
+  refreshTokens RefreshToken[]
+
+  @@map("users")
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  userId    String   @map("user_id")
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("refresh_tokens")
+}
+
+// ==================== USER PROFILE ====================
+
+model UserProfile {
+  id     String  @id @default(uuid())
+  userId String  @unique @map("user_id")
+  age    Int?
+  gender Gender?
+  height Float? // in cm
+  weight Float? // in kg
+  goal   FitnessGoal?
+  level  ExperienceLevel?
+
+  // Training preferences
+  availableDays String[] // ["monday", "wednesday", "friday"]
+  availableTime Int? // minutes per session
+  equipment     Equipment[]
+  restrictions  String[] // physical restrictions/injuries
+
+  // Nutrition preferences
+  dietaryRestrictions String[] // ["vegetarian", "lactose_intolerant"]
+  mealsPerDay         Int?
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_profiles")
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+
+enum FitnessGoal {
+  LOSE_WEIGHT
+  GAIN_MUSCLE
+  MAINTAIN_WEIGHT
+  IMPROVE_ENDURANCE
+}
+
+enum ExperienceLevel {
+  SEDENTARY
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}
+
+enum Equipment {
+  FULL_GYM
+  HOME_BASIC // dumbbells, resistance bands
+  BODYWEIGHT // no equipment
+}
+
+// ==================== WORKOUT PLANS ====================
+
+model WorkoutPlan {
+  id          String     @id @default(uuid())
+  userId      String     @map("user_id")
+  name        String
+  description String?
+  status      PlanStatus @default(ACTIVE)
+  weeks       WorkoutWeek[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workoutLogs WorkoutLog[]
+
+  @@map("workout_plans")
+}
+
+model WorkoutWeek {
+  id            String   @id @default(uuid())
+  workoutPlanId String   @map("workout_plan_id")
+  weekNumber    Int      @map("week_number")
+  days          WorkoutDay[]
+
+  workoutPlan WorkoutPlan @relation(fields: [workoutPlanId], references: [id], onDelete: Cascade)
+
+  @@unique([workoutPlanId, weekNumber])
+  @@map("workout_weeks")
+}
+
+model WorkoutDay {
+  id            String     @id @default(uuid())
+  workoutWeekId String     @map("workout_week_id")
+  dayName       String     @map("day_name") // "Monday", "Tuesday", etc
+  exercises     Exercise[]
+
+  workoutWeek WorkoutWeek @relation(fields: [workoutWeekId], references: [id], onDelete: Cascade)
+
+  @@map("workout_days")
+}
+
+model Exercise {
+  id           String  @id @default(uuid())
+  workoutDayId String  @map("workout_day_id")
+  name         String
+  muscleGroup  String  @map("muscle_group")
+  sets         Int
+  reps         String // "8-12" or "15" or "AMRAP"
+  restSeconds  Int     @map("rest_seconds")
+  instructions String
+  videoUrl     String? @map("video_url")
+  order        Int // exercise order in the workout
+
+  workoutDay WorkoutDay @relation(fields: [workoutDayId], references: [id], onDelete: Cascade)
+
+  @@map("exercises")
+}
+
+// ==================== MEAL PLANS ====================
+
+model MealPlan {
+  id            String     @id @default(uuid())
+  userId        String     @map("user_id")
+  name          String
+  description   String?
+  status        PlanStatus @default(ACTIVE)
+  dailyCalories Int        @map("daily_calories")
+  proteinGrams  Int        @map("protein_grams")
+  carbsGrams    Int        @map("carbs_grams")
+  fatGrams      Int        @map("fat_grams")
+  weeks         MealWeek[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  mealLogs MealLog[]
+
+  @@map("meal_plans")
+}
+
+model MealWeek {
+  id         String    @id @default(uuid())
+  mealPlanId String    @map("meal_plan_id")
+  weekNumber Int       @map("week_number")
+  days       MealDay[]
+
+  mealPlan MealPlan @relation(fields: [mealPlanId], references: [id], onDelete: Cascade)
+
+  @@unique([mealPlanId, weekNumber])
+  @@map("meal_weeks")
+}
+
+model MealDay {
+  id         String @id @default(uuid())
+  mealWeekId String @map("meal_week_id")
+  dayName    String @map("day_name")
+  meals      Meal[]
+
+  mealWeek MealWeek @relation(fields: [mealWeekId], references: [id], onDelete: Cascade)
+
+  @@map("meal_days")
+}
+
+model Meal {
+  id           String   @id @default(uuid())
+  mealDayId    String   @map("meal_day_id")
+  type         MealType
+  name         String
+  ingredients  Json // [{name: string, quantity: string}]
+  instructions String
+  calories     Int
+  protein      Int
+  carbs        Int
+  fat          Int
+  order        Int
+
+  mealDay MealDay @relation(fields: [mealDayId], references: [id], onDelete: Cascade)
+
+  @@map("meals")
+}
+
+enum MealType {
+  BREAKFAST
+  MORNING_SNACK
+  LUNCH
+  AFTERNOON_SNACK
+  DINNER
+  EVENING_SNACK
+}
+
+enum PlanStatus {
+  ACTIVE
+  ARCHIVED
+  DRAFT
+}
+
+// ==================== WORKOUT LOGS ====================
+
+model WorkoutLog {
+  id            String        @id @default(uuid())
+  userId        String        @map("user_id")
+  workoutPlanId String?       @map("workout_plan_id")
+  date          DateTime      @default(now())
+  completed     Boolean       @default(false)
+  notes         String?
+  exercises     ExerciseLog[]
+
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workoutPlan WorkoutPlan? @relation(fields: [workoutPlanId], references: [id], onDelete: SetNull)
+
+  @@map("workout_logs")
+}
+
+model ExerciseLog {
+  id           String        @id @default(uuid())
+  workoutLogId String        @map("workout_log_id")
+  exerciseName String        @map("exercise_name")
+  sets         ExerciseSet[]
+
+  workoutLog WorkoutLog @relation(fields: [workoutLogId], references: [id], onDelete: Cascade)
+
+  @@map("exercise_logs")
+}
+
+model ExerciseSet {
+  id            String  @id @default(uuid())
+  exerciseLogId String  @map("exercise_log_id")
+  setNumber     Int     @map("set_number")
+  weight        Float? // kg
+  reps          Int
+  completed     Boolean @default(false)
+
+  exerciseLog ExerciseLog @relation(fields: [exerciseLogId], references: [id], onDelete: Cascade)
+
+  @@map("exercise_sets")
+}
+
+// ==================== MEAL LOGS ====================
+
+model MealLog {
+  id         String   @id @default(uuid())
+  userId     String   @map("user_id")
+  mealPlanId String?  @map("meal_plan_id")
+  date       DateTime @default(now())
+  type       MealType
+  consumed   Boolean  @default(false)
+  mealName   String?  @map("meal_name")
+  calories   Int?
+  protein    Int?
+  carbs      Int?
+  fat        Int?
+
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  mealPlan MealPlan? @relation(fields: [mealPlanId], references: [id], onDelete: SetNull)
+
+  @@map("meal_logs")
+}
+
+// ==================== PROGRESS TRACKING ====================
+
+model ProgressLog {
+  id         String   @id @default(uuid())
+  userId     String   @map("user_id")
+  date       DateTime @default(now())
+  weight     Float? // kg
+  bodyFat    Float?   @map("body_fat") // percentage
+
+  // Measurements in cm
+  chest      Float?
+  waist      Float?
+  hips       Float?
+  leftArm    Float?   @map("left_arm")
+  rightArm   Float?   @map("right_arm")
+  leftThigh  Float?   @map("left_thigh")
+  rightThigh Float?   @map("right_thigh")
+
+  photos ProgressPhoto[]
+  notes  String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("progress_logs")
+}
+
+model ProgressPhoto {
+  id            String    @id @default(uuid())
+  progressLogId String    @map("progress_log_id")
+  type          PhotoType
+  url           String
+  uploadedAt    DateTime  @default(now()) @map("uploaded_at")
+
+  progressLog ProgressLog @relation(fields: [progressLogId], references: [id], onDelete: Cascade)
+
+  @@map("progress_photos")
+}
+
+enum PhotoType {
+  FRONT
+  SIDE
+  BACK
+}

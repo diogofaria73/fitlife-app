@@ -1,0 +1,105 @@
+# FitLife - Cursor AI Rules
+
+## Projeto
+
+**Nome**: FitLife  
+**Tipo**: Fullstack Monorepo  
+**Arquitetura**: DDD / Clean Architecture  
+**Linguagens**: TypeScript, TSX
+
+## Documentação Principal
+
+Para regras detalhadas, consulte:
+- [.cursor/rules/README.md](./.cursor/rules/README.md) - Índice completo
+- [.cursor/rules/project-context.md](./.cursor/rules/project-context.md) - Contexto do projeto
+
+## Regras Essenciais (Sempre Aplicadas)
+
+### Nomenclatura
+- **PascalCase**: classes, interfaces, types, React components
+- **camelCase**: functions, variables, methods
+- **SCREAMING_SNAKE_CASE**: constants
+- **kebab-case**: file and folder names
+- **Interfaces**: Prefixar com `I` (e.g., `IUserRepository`)
+- **Código**: Sempre em inglês
+
+### Arquitetura (DDD)
+- **Domain**: Framework-agnostic, pure business logic (entities, value objects, repository interfaces)
+- **Application**: Use cases, DTOs; depende apenas de interfaces do domain
+- **Infrastructure**: Implementations (Prisma, Fastify, AI); implementa interfaces do domain
+- **Dependency Injection**: Via constructor com InversifyJS
+- **Use Cases**: Uma responsabilidade por use case
+- **Repositories**: Interfaces no domain, implementations na infrastructure
+
+### Qualidade de Código
+- **Return Types**: Explícitos em todas as funções
+- **Avoid `any`**: Use `unknown` se o tipo for realmente desconhecido
+- **Validation**: Use Zod para validação runtime
+- **Constants**: Extraia magic numbers/strings para constantes
+- **Composition**: Prefira composition sobre herança
+- **Error Messages**: Sempre descritivas e contextualizadas
+
+### Testing
+- **Unit tests**: Para domain entities e use cases
+- **Integration tests**: Para repositories e API endpoints
+- **Coverage**: Mínimo 70% para lógica de negócio
+- **Test Structure**: Use `describe`/`it` com descrições claras
+- **Co-location**: Testes ao lado dos arquivos fonte
+
+### File Organization
+- **One per file**: Uma classe/interface por arquivo
+- **Feature folders**: Agrupar arquivos relacionados por feature
+- **File size**: Máximo 300 linhas; refatore se ultrapassar
+- **Tests**: Co-localizar testes com código fonte
+
+### Git
+- **Conventional Commits**: `feat` / `fix` / `refactor` / `docs` / `test` / `chore`
+- **Clear Messages**: Mensagens de commit descritivas
+- **Atomic**: Commits pequenos e focados
+
+## Comportamento da IA
+
+Ao desenvolver código para este projeto:
+
+1. **Considere primeiro o guia técnico completo** antes de escrever código
+2. **Mantenha a separação de camadas** (Domain → Application → Infrastructure)
+3. **Pergunte quando a lógica de negócio for ambígua**
+4. **Sugira abordagens melhores** se identificar problemas arquiteturais
+5. **Use o Prisma schema** como referência para modelagem de dados
+6. **Otimize queries e indexes** ao trabalhar com banco de dados
+7. **Siga os templates de prompts** em `.cursor/rules/ai-pipeline/prompts.md`
+
+## Referências Rápidas
+
+- **Backend Architecture**: [.cursor/rules/backend/architecture.md](./.cursor/rules/backend/architecture.md)
+- **API Standards**: [.cursor/rules/backend/api-standards.md](./.cursor/rules/backend/api-standards.md)
+- **Database**: [.cursor/rules/backend/database.md](./.cursor/rules/backend/database.md)
+- **Code Style**: [.cursor/rules/standards/code-style.md](./.cursor/rules/standards/code-style.md)
+- **Git Workflow**: [.cursor/rules/standards/git-workflow.md](./.cursor/rules/standards/git-workflow.md)
+- **Testing**: [.cursor/rules/standards/testing.md](./.cursor/rules/standards/testing.md)
+- **Implementation Guide**: [.cursor/rules/ai-pipeline/implementation.md](./.cursor/rules/ai-pipeline/implementation.md)
+- **Prompt Templates**: [.cursor/rules/ai-pipeline/prompts.md](./.cursor/rules/ai-pipeline/prompts.md)
+
+## Tech Stack
+
+**Backend**: Node.js 20, Fastify 4, Prisma 5, PostgreSQL 16, Redis, TypeScript 5.3+  
+**Frontend Web**: React 18, Vite, Tailwind CSS, shadcn/ui, Zustand, React Query  
+**Frontend Mobile**: React Native 0.73, React Navigation 6, React Native Paper  
+**AI**: Anthropic Claude (Haiku), OpenAI GPT-4o-mini (fallback)
+
+## Estrutura do Monorepo
+
+```
+fitlife-app/
+├── apps/
+│   ├── api/          # Backend (Fastify + Prisma)
+│   ├── web/          # Frontend Web (React + Vite)
+│   └── mobile/       # Frontend Mobile (React Native)
+└── packages/
+    └── shared/       # Shared code (types, utils, schemas)
+```
+
+---
+
+**Versão**: 2.0  
+**Última Atualização**: 2026-02-07
