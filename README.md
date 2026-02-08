@@ -130,6 +130,7 @@ pnpm android  # ou pnpm ios
 
 ## 📚 Documentação
 
+- **[Setup Guide](./SETUP_GUIDE.md)** - Guia completo do script de setup
 - [Cursor Rules](./.cursor/rules/README.md) - Regras e convenções do projeto
 - [Backend Architecture](./.cursor/rules/backend/architecture.md) - Arquitetura DDD
 - [API Standards](./.cursor/rules/backend/api-standards.md) - Padrões de API
