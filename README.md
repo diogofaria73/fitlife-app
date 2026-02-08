@@ -14,33 +14,25 @@ fitlife-app/
     └── shared/       # Código compartilhado (types, utils)
 ```
 
-## 🔄 Tech Stack Updates
+## 💻 Tech Stack
 
-### Prisma 7
+### Database & ORM
 
-O projeto utiliza **Prisma 7**, que introduziu mudanças significativas:
+- **Prisma 5.22.0** - ORM moderno e type-safe para PostgreSQL
+- **PostgreSQL 16** - Banco de dados relacional
 
-**Mudanças principais:**
-- ✅ Conexão de banco movida para `prisma.config.ts`
-- ✅ Schema simplificado (sem `url` no datasource)
-- ✅ Melhor separação de concerns
+**Configuração:**
+- Schema: `apps/api/prisma/schema.prisma`
+- Migrations: `apps/api/prisma/migrations/`
+- Cliente gerado automaticamente com type-safety completo
 
-**Estrutura:**
-```typescript
-// apps/api/prisma.config.ts
-import { defineConfig } from '@prisma/client'
-
-export default defineConfig({
-  datasourceUrl: process.env.DATABASE_URL
-})
-```
-
-```prisma
-// apps/api/prisma/schema.prisma
-datasource db {
-  provider = "postgresql"
-  // url removido - agora está em prisma.config.ts
-}
+**Comandos úteis:**
+```bash
+cd apps/api
+pnpm db:generate    # Gera Prisma Client
+pnpm db:migrate     # Aplica migrations
+pnpm db:studio      # Abre Prisma Studio (GUI)
+pnpm db:seed        # Popula banco com dados
 ```
 
 ---
