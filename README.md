@@ -152,6 +152,19 @@ cd apps/api && pnpm db:studio
 
 ## 📚 Documentação
 
+### API Documentation
+
+A documentação interativa da API está disponível via Swagger UI:
+
+**Local:** http://localhost:3001/docs
+
+A documentação é gerada automaticamente a partir dos schemas OpenAPI definidos nas rotas.
+
+**Endpoints disponíveis:**
+- **Swagger UI:** `http://localhost:3001/docs`
+- **OpenAPI JSON:** `http://localhost:3001/docs/json`
+- **OpenAPI YAML:** `http://localhost:3001/docs/yaml`
+
 ### Estrutura de Documentação
 
 Toda documentação está organizada em `apps/docs/`:
