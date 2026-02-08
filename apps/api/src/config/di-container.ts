@@ -10,8 +10,10 @@ import { TYPES } from './types';
 export function createContainer(): Container {
   const container = new Container();
 
-  // Database
-  container.bind<PrismaClient>(TYPES.PrismaClient).toConstantValue(new PrismaClient());
+  // Database - Prisma 7 with config file
+  // The connection URL is now loaded from prisma.config.ts
+  const prisma = new PrismaClient();
+  container.bind<PrismaClient>(TYPES.PrismaClient).toConstantValue(prisma);
 
   // Repositories
   // TODO: Bind repository implementations
