@@ -153,7 +153,24 @@ pnpm android  # ou pnpm ios
 
 ## 📚 Documentação
 
-- **[Setup Guide](./SETUP_GUIDE.md)** - Guia completo do script de setup
+### Estrutura de Documentação
+
+Toda documentação está organizada em `apps/docs/`:
+
+- **[Documentação Técnica](./apps/docs/tech_docs/)** - Setup, arquitetura, APIs, DevOps
+  - [001 - Setup Guide](./apps/docs/tech_docs/001-setup-guide.md)
+  
+- **[Documentação de Negócio](./apps/docs/business_docs/)** - Requisitos, fluxos, regras de negócio
+
+### Regras de Documentação
+
+- Arquivos numerados: `001-nome-descritivo.md`
+- Usar kebab-case para nomes
+- Separar documentação técnica de negócio
+- Ver [regras completas](./.cursor/rules/standards/documentation.md)
+
+### Outras Documentações
+
 - [Cursor Rules](./.cursor/rules/README.md) - Regras e convenções do projeto
 - [Backend Architecture](./.cursor/rules/backend/architecture.md) - Arquitetura DDD
 - [API Standards](./.cursor/rules/backend/api-standards.md) - Padrões de API
