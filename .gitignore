@@ -6,6 +6,15 @@ node_modules/
 .env
 .env.local
 .env.*.local
+apps/web/.env.local
+apps/mobile/.env
+
+# FitLife PIDs
+.fitlife-pids
+
+# Logs
+logs/
+*.log
 
 # Build outputs
 dist/

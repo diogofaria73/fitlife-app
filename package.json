@@ -8,6 +8,8 @@
     "packages/*"
   ],
   "scripts": {
+    "setup": "bash setup.sh",
+    "stop": "bash stop.sh",
     "dev": "pnpm --filter ./apps/* dev",
     "build": "pnpm --filter ./apps/* build",
     "test": "pnpm --filter ./apps/* test",
