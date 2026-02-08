@@ -14,6 +14,37 @@ fitlife-app/
     └── shared/       # Código compartilhado (types, utils)
 ```
 
+## 🔄 Tech Stack Updates
+
+### Prisma 7
+
+O projeto utiliza **Prisma 7**, que introduziu mudanças significativas:
+
+**Mudanças principais:**
+- ✅ Conexão de banco movida para `prisma.config.ts`
+- ✅ Schema simplificado (sem `url` no datasource)
+- ✅ Melhor separação de concerns
+
+**Estrutura:**
+```typescript
+// apps/api/prisma.config.ts
+import { defineConfig } from '@prisma/client'
+
+export default defineConfig({
+  datasourceUrl: process.env.DATABASE_URL
+})
+```
+
+```prisma
+// apps/api/prisma/schema.prisma
+datasource db {
+  provider = "postgresql"
+  // url removido - agora está em prisma.config.ts
+}
+```
+
+---
+
 ## 🚀 Quick Start
 
 ### Opção A: Setup Automatizado (Recomendado) ⚡
