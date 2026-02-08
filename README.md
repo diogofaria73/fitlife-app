@@ -16,7 +16,52 @@ fitlife-app/
 
 ## 🚀 Quick Start
 
-### Opção A: Docker (Recomendado) 🐳
+### Opção A: Setup Automatizado (Recomendado) ⚡
+
+Use o script interativo de setup que configura tudo automaticamente:
+
+```bash
+# Setup completo com menu interativo
+./setup.sh
+
+# Ou usando pnpm
+pnpm setup
+```
+
+O script irá:
+1. ✅ Validar pré-requisitos (Node.js, pnpm, Docker)
+2. 📦 Instalar todas as dependências
+3. 📝 Criar arquivos `.env` com valores padrão
+4. 🐳 Iniciar Docker (PostgreSQL, Redis)
+5. 🗄️ Configurar banco de dados (Prisma migrations)
+6. 🎯 Menu interativo para escolher quais apps executar
+
+**Opções do menu:**
+- Todas as aplicações (API + Web + Mobile)
+- API + Web
+- API + Mobile
+- Somente API
+- Somente Web
+- Somente Mobile
+- Sair (setup completo, não executar)
+
+**Modo não-interativo com flags:**
+```bash
+./setup.sh --api --web        # Apenas API e Web
+./setup.sh --api              # Apenas API
+./setup.sh --clean --api      # Limpar e reinstalar, depois rodar API
+```
+
+**Para parar tudo:**
+```bash
+./stop.sh
+# ou
+pnpm stop
+```
+
+---
+
+### Opção B: Docker (Recomendado - Mais Fácil) 🐳
 
 ```bash
 # Iniciar todos os serviços (PostgreSQL, Redis, API)
