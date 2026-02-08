@@ -25,8 +25,31 @@ RUN_API=false
 RUN_WEB=false
 RUN_MOBILE=false
 
+show_help() {
+  echo "FitLife Setup Script"
+  echo ""
+  echo "Usage: ./setup.sh [OPTIONS]"
+  echo ""
+  echo "Options:"
+  echo "  --clean        Clean previous setup (remove node_modules, .env files)"
+  echo "  --api          Run API server (non-interactive)"
+  echo "  --web          Run Web app (non-interactive)"
+  echo "  --mobile       Run Mobile app (non-interactive)"
+  echo "  --help         Show this help message"
+  echo ""
+  echo "Examples:"
+  echo "  ./setup.sh                    # Interactive menu"
+  echo "  ./setup.sh --api --web        # Run API and Web"
+  echo "  ./setup.sh --clean --api      # Clean and run only API"
+  echo ""
+  exit 0
+}
+
 while [[ $# -gt 0 ]]; do
   case $1 in
+    --help|-h)
+      show_help
+      ;;
     --clean)
       CLEAN_MODE=true
       shift
@@ -48,6 +71,7 @@ while [[ $# -gt 0 ]]; do
       ;;
     *)
       echo -e "${CROSS} Unknown option: $1"
+      echo "Use --help for usage information"
       exit 1
       ;;
   esac
