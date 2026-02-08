@@ -21,6 +21,7 @@ INFO="${BLUE}ℹ️${NC}"
 # Parse command line arguments
 CLEAN_MODE=false
 NON_INTERACTIVE=false
+DOCKER_MODE=false
 RUN_API=false
 RUN_WEB=false
 RUN_MOBILE=false
@@ -32,14 +33,16 @@ show_help() {
   echo ""
   echo "Options:"
   echo "  --clean        Clean previous setup (remove node_modules, .env files)"
+  echo "  --docker       Run API and Web inside Docker (default: local)"
   echo "  --api          Run API server (non-interactive)"
   echo "  --web          Run Web app (non-interactive)"
   echo "  --mobile       Run Mobile app (non-interactive)"
   echo "  --help         Show this help message"
   echo ""
   echo "Examples:"
-  echo "  ./setup.sh                    # Interactive menu"
-  echo "  ./setup.sh --api --web        # Run API and Web"
+  echo "  ./setup.sh                    # Interactive menu (local execution)"
+  echo "  ./setup.sh --docker           # Run API and Web in Docker"
+  echo "  ./setup.sh --api --web        # Run API and Web locally"
   echo "  ./setup.sh --clean --api      # Clean and run only API"
   echo ""
   exit 0
@@ -52,6 +55,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     --clean)
       CLEAN_MODE=true
+      shift
+      ;;
+    --docker)
+      DOCKER_MODE=true
       shift
       ;;
     --api)
@@ -222,7 +229,7 @@ if [ ! -f "apps/api/.env" ]; then
     cat > apps/api/.env << EOF
 # Environment
 NODE_ENV=development
-PORT=3000
+PORT=3001
 
 # Database
 DATABASE_URL=postgresql://postgres:postgres@localhost:5432/fitlife
@@ -291,7 +298,13 @@ echo ""
 echo -e "${INFO} Starting Docker services..."
 echo ""
 
-docker-compose up -d
+if [ "$DOCKER_MODE" = true ]; then
+    echo "   Starting all services (including API and Web) in Docker..."
+    docker-compose --profile docker-apps up -d
+else
+    echo "   Starting infrastructure services (PostgreSQL, Redis)..."
+    docker-compose up -d postgres redis
+fi
 
 echo ""
 echo -e "${INFO} Waiting for services to be healthy..."
@@ -322,51 +335,90 @@ fi
 
 echo -e "${CHECK} PostgreSQL ready"
 echo -e "${CHECK} Redis ready"
+
+if [ "$DOCKER_MODE" = true ]; then
+    echo -e "${CHECK} API container starting (logs: docker logs -f fitlife-api)"
+    echo -e "${CHECK} Web container starting (logs: docker logs -f fitlife-web)"
+fi
+
 echo ""
 
 # ============================================
 # 6. PRISMA DATABASE SETUP
 # ============================================
 
-echo -e "${INFO} Setting up database..."
-echo ""
-
-cd apps/api
-
-# Generate Prisma Client
-echo "   Generating Prisma Client..."
-pnpm db:generate > /dev/null 2>&1
-echo -e "${CHECK} Prisma Client generated"
-
-# Run migrations
-echo "   Running migrations..."
-pnpm db:migrate > /dev/null 2>&1 || true
-echo -e "${CHECK} Migrations applied"
-
-# Ask about seeding
-if [ "$NON_INTERACTIVE" = false ]; then
-    read -p "   Do you want to seed the database with sample data? (y/N): " -n 1 -r
+# Only run migrations locally if not in Docker mode
+if [ "$DOCKER_MODE" = false ]; then
+    echo -e "${INFO} Setting up database..."
     echo ""
-    if [[ $REPLY =~ ^[Yy]$ ]]; then
-        if [ -f "prisma/seed.ts" ]; then
-            echo "   Seeding database..."
-            pnpm db:seed
-            echo -e "${CHECK} Database seeded"
-        else
-            echo -e "${WARN} Seed file not found, skipping"
+
+    cd apps/api
+
+    # Generate Prisma Client
+    echo "   Generating Prisma Client..."
+    pnpm db:generate > /dev/null 2>&1
+    echo -e "${CHECK} Prisma Client generated"
+
+    # Run migrations
+    echo "   Running migrations..."
+    pnpm db:migrate > /dev/null 2>&1 || true
+    echo -e "${CHECK} Migrations applied"
+
+    # Ask about seeding
+    if [ "$NON_INTERACTIVE" = false ]; then
+        read -p "   Do you want to seed the database with sample data? (y/N): " -n 1 -r
+        echo ""
+        if [[ $REPLY =~ ^[Yy]$ ]]; then
+            if [ -f "prisma/seed.ts" ]; then
+                echo "   Seeding database..."
+                pnpm db:seed
+                echo -e "${CHECK} Database seeded"
+            else
+                echo -e "${WARN} Seed file not found, skipping"
+            fi
         fi
     fi
+
+    cd ../..
+
+    echo ""
+else
+    echo -e "${INFO} Docker mode: Prisma setup will run inside API container"
+    echo ""
 fi
-
-cd ../..
-
-echo ""
 
 # ============================================
 # 7. MENU FOR RUNNING APPLICATIONS
 # ============================================
 
-# Check ports in use
+# If Docker mode, exit early as apps are already running in containers
+if [ "$DOCKER_MODE" = true ]; then
+    echo ""
+    echo "╔════════════════════════════════════════╗"
+    echo "║         🎉 Setup Complete! 🎉         ║"
+    echo "╔════════════════════════════════════════╗"
+    echo ""
+    echo -e "${GREEN}🚀 Applications Running in Docker:${NC}"
+    echo -e "   ${CHECK} API:    http://localhost:3001"
+    echo -e "   ${CHECK} Web:    http://localhost:5173"
+    echo ""
+    echo -e "${BLUE}📦 Docker Services:${NC}"
+    echo -e "   ${CHECK} PostgreSQL: localhost:5432"
+    echo -e "   ${CHECK} Redis:      localhost:6379"
+    echo ""
+    echo -e "${YELLOW}📝 View Logs:${NC}"
+    echo "   docker logs -f fitlife-api"
+    echo "   docker logs -f fitlife-web"
+    echo ""
+    echo -e "${RED}🛑 To stop all services:${NC}"
+    echo "   ./stop.sh"
+    echo ""
+    echo -e "${GREEN}Happy coding! 💻${NC}"
+    echo ""
+    exit 0
+fi
+
+# Check ports in use (local mode only)
 check_port() {
     lsof -i:$1 &> /dev/null
     return $?
@@ -471,7 +523,7 @@ if [ "$RUN_API" = true ]; then
     # Wait for API to be ready
     echo "   Waiting for API to be ready..."
     for i in {1..30}; do
-        if curl -s http://localhost:3000/health > /dev/null 2>&1; then
+        if curl -s http://localhost:3001/health > /dev/null 2>&1; then
             echo -e "${CHECK} API is responding"
             break
         fi
@@ -521,7 +573,7 @@ if [ "$RUN_API" = true ] || [ "$RUN_WEB" = true ] || [ "$RUN_MOBILE" = true ]; t
     echo -e "${GREEN}🚀 Applications Running:${NC}"
     
     if [ "$RUN_API" = true ]; then
-        echo -e "   ${CHECK} API:    http://localhost:3000 (PID: $API_PID)"
+        echo -e "   ${CHECK} API:    http://localhost:3001 (PID: $API_PID)"
     fi
     
     if [ "$RUN_WEB" = true ]; then

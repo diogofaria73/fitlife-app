@@ -1,31 +1,31 @@
-export class ApplicationError extends Error {
+/**
+ * Custom Application Errors
+ */
+
+export class ValidationError extends Error {
   constructor(message: string) {
     super(message);
-    this.name = this.constructor.name;
-    Error.captureStackTrace(this, this.constructor);
+    this.name = 'ValidationError';
   }
 }
 
-export class UserAlreadyExistsError extends ApplicationError {
-  constructor(email: string) {
-    super(`User with email ${email} already exists`);
-  }
-}
-
-export class UnauthorizedError extends ApplicationError {
-  constructor(message: string = 'Unauthorized') {
-    super(message);
-  }
-}
-
-export class ForbiddenError extends ApplicationError {
-  constructor(message: string = 'Forbidden') {
-    super(message);
-  }
-}
-
-export class ValidationError extends ApplicationError {
+export class UserAlreadyExistsError extends Error {
   constructor(message: string) {
     super(message);
+    this.name = 'UserAlreadyExistsError';
+  }
+}
+
+export class UnauthorizedError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'UnauthorizedError';
+  }
+}
+
+export class NotFoundError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'NotFoundError';
   }
 }

@@ -9,8 +9,16 @@
   ],
   "scripts": {
     "setup": "bash setup.sh",
+    "setup:docker": "bash setup.sh --docker",
     "stop": "bash stop.sh",
-    "dev": "pnpm --filter ./apps/* dev",
+    "services:up": "docker compose up -d postgres redis",
+    "services:down": "docker compose down postgres redis",
+    "dev": "concurrently \"pnpm --filter @fitlife/api dev\" \"pnpm --filter @fitlife/web dev\"",
+    "dev:api": "pnpm --filter @fitlife/api dev",
+    "dev:web": "pnpm --filter @fitlife/web dev",
+    "dev:docker": "docker compose --profile docker-apps up",
+    "dev:docker:api": "docker compose --profile docker-apps up api",
+    "dev:docker:web": "docker compose --profile docker-apps up web",
     "build": "pnpm --filter ./apps/* build",
     "test": "pnpm --filter ./apps/* test",
     "lint": "pnpm --filter ./apps/* lint",
@@ -18,9 +26,10 @@
   },
   "devDependencies": {
     "@types/node": "^20.11.0",
-    "typescript": "^5.3.3",
+    "concurrently": "^9.2.1",
+    "eslint": "^8.56.0",
     "prettier": "^3.2.4",
-    "eslint": "^8.56.0"
+    "typescript": "^5.3.3"
   },
   "engines": {
     "node": ">=20.0.0",

@@ -39,12 +39,12 @@ services:
 
   # Backend API (Development)
   api:
+    profiles: ["docker-apps"]
     build:
       context: .
       dockerfile: apps/api/Dockerfile
       target: builder
     container_name: fitlife-api
-    restart: unless-stopped
     depends_on:
       postgres:
         condition: service_healthy
@@ -52,7 +52,7 @@ services:
         condition: service_healthy
     environment:
       NODE_ENV: development
-      PORT: 3000
+      PORT: 3001
       DATABASE_URL: postgresql://postgres:postgres@postgres:5432/fitlife
       REDIS_URL: redis://redis:6379
       JWT_SECRET: ${JWT_SECRET:-dev-secret-change-in-production}
@@ -63,7 +63,7 @@ services:
       WEB_URL: http://localhost:5173
       MOBILE_APP_SCHEME: fitlife://
     ports:
-      - '3000:3000'
+      - '3001:3001'
     volumes:
       - ./apps/api/src:/app/apps/api/src
       - ./apps/api/prisma:/app/apps/api/prisma
@@ -74,6 +74,7 @@ services:
 
   # Prisma Studio (Database GUI)
   prisma-studio:
+    profiles: ["tools"]
     image: node:20-alpine
     container_name: fitlife-prisma-studio
     working_dir: /app
@@ -88,6 +89,23 @@ services:
     networks:
       - fitlife-network
     command: sh -c "npm install -g prisma && npx prisma studio --port 5555 --hostname 0.0.0.0"
+
+  # Frontend Web (Development)
+  web:
+    profiles: ["docker-apps"]
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      target: runner
+    container_name: fitlife-web
+    depends_on:
+      - api
+    environment:
+      VITE_API_URL: http://localhost:3001/api/v1
+    ports:
+      - '5173:5173'
+    networks:
+      - fitlife-network
 
 volumes:
   postgres_data:

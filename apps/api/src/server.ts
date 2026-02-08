@@ -2,6 +2,7 @@ import 'reflect-metadata';
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import { env } from './config/env';
+import { authRoutes } from './infrastructure/http/routes/auth-routes';
 
 /**
  * Creates and configures Fastify server
@@ -15,7 +16,9 @@ async function createServer(): Promise<ReturnType<typeof Fastify>> {
 
   // Register CORS
   await server.register(cors, {
-    origin: [env.WEB_URL, env.MOBILE_APP_SCHEME],
+    origin: env.NODE_ENV === 'development' 
+      ? true  // Allow all origins in development
+      : [env.WEB_URL, env.MOBILE_APP_SCHEME],
     credentials: true,
   });
 
@@ -28,9 +31,10 @@ async function createServer(): Promise<ReturnType<typeof Fastify>> {
     };
   });
 
-  // API routes will be registered here
-  // TODO: Register route modules
-  // await server.register(authRoutes, { prefix: '/api/v1/auth' });
+  // Register API routes
+  await server.register(authRoutes, { prefix: '/api/v1' });
+  
+  // TODO: Register other route modules
   // await server.register(userRoutes, { prefix: '/api/v1/users' });
   // await server.register(workoutRoutes, { prefix: '/api/v1/workouts' });
   // await server.register(mealRoutes, { prefix: '/api/v1/meals' });
@@ -53,6 +57,7 @@ async function start(): Promise<void> {
 
     server.log.info(`🚀 Server running on http://localhost:${env.PORT}`);
     server.log.info(`📚 Environment: ${env.NODE_ENV}`);
+    server.log.info(`🔗 API endpoint: http://localhost:${env.PORT}/api/v1`);
   } catch (error) {
     console.error('Failed to start server:', error);
     process.exit(1);

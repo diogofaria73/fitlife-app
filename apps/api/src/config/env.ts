@@ -31,7 +31,7 @@ function getEnv(): Env {
     JWT_SECRET: process.env.JWT_SECRET!,
     JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN || '15m',
     REFRESH_TOKEN_EXPIRES_IN: process.env.REFRESH_TOKEN_EXPIRES_IN || '7d',
-    ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY!,
+    ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY || '',
     OPENAI_API_KEY: process.env.OPENAI_API_KEY || '',
     STORAGE_PROVIDER: process.env.STORAGE_PROVIDER || 's3',
     AWS_ACCESS_KEY_ID: process.env.AWS_ACCESS_KEY_ID || '',

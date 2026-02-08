@@ -39,12 +39,12 @@ pnpm db:seed        # Popula banco com dados
 
 ## 🚀 Quick Start
 
-### Opção A: Setup Automatizado (Recomendado) ⚡
+### Opção A: Execução Local (Recomendado para Desenvolvimento) ⚡
 
-Use o script interativo de setup que configura tudo automaticamente:
+Executa API e Web **localmente** (fora do Docker) com hot reload completo. Serviços de infraestrutura (PostgreSQL, Redis) sempre rodam em Docker.
 
 ```bash
-# Setup completo com menu interativo
+# 1. Setup automático
 ./setup.sh
 
 # Ou usando pnpm
@@ -55,9 +55,9 @@ O script irá:
 1. ✅ Validar pré-requisitos (Node.js, pnpm, Docker)
 2. 📦 Instalar todas as dependências
 3. 📝 Criar arquivos `.env` com valores padrão
-4. 🐳 Iniciar Docker (PostgreSQL, Redis)
+4. 🐳 Iniciar serviços Docker (PostgreSQL, Redis)
 5. 🗄️ Configurar banco de dados (Prisma migrations)
-6. 🎯 Menu interativo para escolher quais apps executar
+6. 🎯 Menu interativo para escolher quais apps executar **localmente**
 
 **Opções do menu:**
 - Todas as aplicações (API + Web + Mobile)
@@ -70,9 +70,23 @@ O script irá:
 
 **Modo não-interativo com flags:**
 ```bash
-./setup.sh --api --web        # Apenas API e Web
-./setup.sh --api              # Apenas API
+./setup.sh --api --web        # Apenas API e Web (local)
+./setup.sh --api              # Apenas API (local)
 ./setup.sh --clean --api      # Limpar e reinstalar, depois rodar API
+```
+
+**Desenvolvimento após setup:**
+```bash
+# Rodar API e Web juntos
+pnpm dev
+
+# Rodar separadamente
+pnpm dev:api          # Apenas API local
+pnpm dev:web          # Apenas Web local
+
+# Gerenciar serviços Docker (PostgreSQL, Redis)
+pnpm services:up      # Subir serviços
+pnpm services:down    # Parar serviços
 ```
 
 **Para parar tudo:**
@@ -84,72 +98,57 @@ pnpm stop
 
 ---
 
-### Opção B: Docker (Recomendado - Mais Fácil) 🐳
+### Opção B: Execução Full-Docker (Explícita) 🐳
+
+Executa **tudo** em Docker (API, Web, PostgreSQL, Redis). Útil para testar em ambiente isolado ou CI/CD.
 
 ```bash
-# Iniciar todos os serviços (PostgreSQL, Redis, API)
-docker-compose up -d
+# Setup para Docker
+./setup.sh --docker
 
-# Aplicar migrations
-docker-compose exec api pnpm db:migrate
+# Ou usando pnpm
+pnpm setup:docker
+```
 
-# (Opcional) Seed database
-docker-compose exec api pnpm db:seed
+**Ou manualmente:**
+```bash
+# Subir todos os serviços
+docker compose --profile docker-apps up -d
+
+# Ver logs
+docker logs -f fitlife-api
+docker logs -f fitlife-web
 
 # Acessar:
-# - API: http://localhost:3000
-# - Prisma Studio: http://localhost:5555
+# - API: http://localhost:3001
+# - Web: http://localhost:5173
+# - Prisma Studio: docker compose --profile tools up prisma-studio
 ```
 
-Ver documentação completa em [DOCKER.md](./DOCKER.md)
+**Comandos Docker úteis:**
+```bash
+pnpm dev:docker          # API + Web no Docker
+pnpm dev:docker:api      # Apenas API no Docker
+pnpm dev:docker:web      # Apenas Web no Docker
+```
 
-### Opção B: Instalação Local
+---
 
-#### Pré-requisitos
-
-- Node.js 20+
-- pnpm 8+
-- PostgreSQL 16
-- Redis (opcional para caching)
-
-#### Instalação
+### Comandos Úteis
 
 ```bash
-# Instalar dependências
-pnpm install
+# Gerenciar serviços de infraestrutura
+pnpm services:up         # PostgreSQL + Redis
+pnpm services:down       # Parar PostgreSQL + Redis
 
-# Configurar variáveis de ambiente
-cd apps/api
-cp .env.example .env
-# Edite .env com suas configurações
+# Parar tudo (local e Docker)
+pnpm stop
 
-# Gerar Prisma Client
-cd apps/api
-pnpm db:generate
-
-# Rodar migrations
-pnpm db:migrate
-
-# Seed database (opcional)
-pnpm db:seed
+# Prisma Studio (GUI de banco de dados)
+cd apps/api && pnpm db:studio
 ```
 
-### Desenvolvimento
-
-```bash
-# Backend API (porta 3000)
-cd apps/api
-pnpm dev
-
-# Frontend Web (porta 5173)
-cd apps/web
-pnpm dev
-
-# Frontend Mobile
-cd apps/mobile
-pnpm start
-pnpm android  # ou pnpm ios
-```
+---
 
 ## 📚 Documentação
 
@@ -217,25 +216,52 @@ O projeto segue **Domain-Driven Design (DDD)** e **Clean Architecture**:
 ## 📝 Scripts Úteis
 
 ```bash
-# Backend
-pnpm --filter @fitlife/api dev         # Dev server
-pnpm --filter @fitlife/api test        # Run tests
-pnpm --filter @fitlife/api db:studio   # Prisma Studio
+# ===== DESENVOLVIMENTO LOCAL (Recomendado) =====
 
-# Web
-pnpm --filter @fitlife/web dev         # Dev server
-pnpm --filter @fitlife/web build       # Build production
+# Rodar API e Web juntos
+pnpm dev
 
-# Mobile
-pnpm --filter @fitlife/mobile start    # Metro bundler
-pnpm --filter @fitlife/mobile android  # Run Android
-pnpm --filter @fitlife/mobile ios      # Run iOS
+# Rodar separadamente
+pnpm dev:api          # Backend API local
+pnpm dev:web          # Frontend Web local
 
-# Root (todos os apps)
-pnpm dev        # Dev mode para todos
-pnpm build      # Build todos
-pnpm test       # Testes em todos
-pnpm lint       # Lint todos
+# Serviços Docker (PostgreSQL, Redis)
+pnpm services:up      # Subir serviços
+pnpm services:down    # Parar serviços
+
+# ===== DESENVOLVIMENTO DOCKER (Explícito) =====
+
+pnpm dev:docker          # API + Web no Docker
+pnpm dev:docker:api      # Apenas API no Docker
+pnpm dev:docker:web      # Apenas Web no Docker
+
+# ===== BACKEND =====
+
+cd apps/api
+pnpm dev              # Dev server local
+pnpm test             # Run tests
+pnpm db:studio        # Prisma Studio
+pnpm db:generate      # Gerar Prisma Client
+pnpm db:migrate       # Rodar migrations
+
+# ===== WEB =====
+
+cd apps/web
+pnpm dev              # Dev server local
+pnpm build            # Build production
+
+# ===== MOBILE =====
+
+cd apps/mobile
+pnpm start            # Metro bundler
+pnpm android          # Run Android
+pnpm ios              # Run iOS
+
+# ===== MONOREPO =====
+
+pnpm build            # Build todos os apps
+pnpm test             # Testes em todos
+pnpm lint             # Lint todos
 ```
 
 ## 🧪 Testes
