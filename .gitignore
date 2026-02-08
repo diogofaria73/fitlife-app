@@ -48,6 +48,10 @@ coverage/
 # Prisma
 apps/api/prisma/migrations/*.sql
 
+# Documentation (keep structure)
+apps/docs/**/*.tmp
+apps/docs/**/*.draft
+
 # Temporary files
 *.tmp
 .cache/
