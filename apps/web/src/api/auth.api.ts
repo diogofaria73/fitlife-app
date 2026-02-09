@@ -10,9 +10,17 @@ export interface RegisterRequest {
 }
 
 /**
- * Register Response Interface
+ * Login Request Interface
  */
-export interface RegisterResponse {
+export interface LoginRequest {
+  email: string;
+  password: string;
+}
+
+/**
+ * Auth Response Interface
+ */
+export interface AuthResponse {
   user: {
     id: string;
     name: string;
@@ -24,6 +32,12 @@ export interface RegisterResponse {
 }
 
 /**
+ * Register Response Interface
+ * @deprecated Use AuthResponse instead
+ */
+export interface RegisterResponse extends AuthResponse {}
+
+/**
  * Auth API Service
  * Handles authentication-related API calls
  */
@@ -33,8 +47,18 @@ export const authApi = {
    * @param data - User registration data
    * @returns Auth response with user and tokens
    */
-  register: async (data: RegisterRequest): Promise<RegisterResponse> => {
-    const response = await apiClient.post<RegisterResponse>('/auth/register', data);
+  register: async (data: RegisterRequest): Promise<AuthResponse> => {
+    const response = await apiClient.post<AuthResponse>('/auth/register', data);
+    return response.data;
+  },
+
+  /**
+   * Logs in an existing user
+   * @param data - User login credentials
+   * @returns Auth response with user and tokens
+   */
+  login: async (data: LoginRequest): Promise<AuthResponse> => {
+    const response = await apiClient.post<AuthResponse>('/auth/login', data);
     return response.data;
   }
 };
